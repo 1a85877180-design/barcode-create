@@ -3,7 +3,9 @@
   <input id="studentId" type="text" placeholder="Nhập mã sinh viên" style="width:80%; padding:6px;" />
   <button onclick="generateBarcode()" style="padding:6px 12px;">Tạo</button>
   <div id="barcode" style="margin-top:15px;"></div>
-  <a id="download" style="display:none; margin-top:10px; text-decoration:none; color:white; background:#007bff; padding:6px 12px; border-radius:5px;">Tải ảnh</a>
+
+  <!-- Phần hướng dẫn sẽ được thêm sau khi tạo -->
+  <div id="guide" style="margin-top:15px; font-size:14px; line-height:1.5; color:#333;"></div>
 </div>
 
 <!-- Thư viện JsBarcode -->
@@ -12,34 +14,27 @@
 function generateBarcode() {
   const val = document.getElementById("studentId").value.trim();
   const barcodeDiv = document.getElementById("barcode");
-  const downloadLink = document.getElementById("download");
-  if (!val) { alert("Vui lòng nhập mã sinh viên!"); return; }
+  const guideDiv = document.getElementById("guide");
 
-  // Xóa barcode cũ
+  if (!val) { 
+    alert("Vui lòng nhập mã sinh viên!"); 
+    return; 
+  }
+
+  // Xóa nội dung cũ
   barcodeDiv.innerHTML = "";
+  guideDiv.innerHTML = "";
 
-  // Tạo SVG
+  // Tạo SVG barcode
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   JsBarcode(svg, val, {format: "CODE128", width: 2, height: 80, displayValue: true});
   barcodeDiv.appendChild(svg);
 
-  // Chuyển SVG thành PNG để tải
-  const serializer = new XMLSerializer();
-  const svgStr = serializer.serializeToString(svg);
-  const img = new Image();
-  img.onload = function() {
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width * 2;
-    canvas.height = img.height * 2;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const png = canvas.toDataURL("image/png");
-    downloadLink.href = png;
-    downloadLink.download = val + ".png";
-    downloadLink.style.display = "inline-block";
-  };
-  img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgStr)));
+  // Hiển thị hướng dẫn sau khi barcode được tạo
+  guideDiv.innerHTML = `
+    <p><strong>Hướng dẫn sau khi quét barcode:</strong></p>
+    <p>Sau khi quét barcode vào máy mượn trả, bạn đọc cần nhập <strong>ngày sinh, tháng sinh và năm sinh (6 số)</strong>.</p>
+    <p>Ví dụ: bạn sinh ngày <strong>01/01/2007</strong> thì sẽ nhập vào máy mượn trả là: <strong>010107</strong>.</p>
+  `;
 }
 </script>
