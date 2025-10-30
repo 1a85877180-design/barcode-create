@@ -1,0 +1,45 @@
+<div style="font-family: Arial; max-width:400px; margin:auto; text-align:center; padding:20px; border:1px solid #ccc; border-radius:10px;">
+  <h3>Tạo Barcode Mã Sinh Viên</h3>
+  <input id="studentId" type="text" placeholder="Nhập mã sinh viên" style="width:80%; padding:6px;" />
+  <button onclick="generateBarcode()" style="padding:6px 12px;">Tạo</button>
+  <div id="barcode" style="margin-top:15px;"></div>
+  <a id="download" style="display:none; margin-top:10px; text-decoration:none; color:white; background:#007bff; padding:6px 12px; border-radius:5px;">Tải ảnh</a>
+</div>
+
+<!-- Thư viện JsBarcode -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script>
+function generateBarcode() {
+  const val = document.getElementById("studentId").value.trim();
+  const barcodeDiv = document.getElementById("barcode");
+  const downloadLink = document.getElementById("download");
+  if (!val) { alert("Vui lòng nhập mã sinh viên!"); return; }
+
+  // Xóa barcode cũ
+  barcodeDiv.innerHTML = "";
+
+  // Tạo SVG
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  JsBarcode(svg, val, {format: "CODE128", width: 2, height: 80, displayValue: true});
+  barcodeDiv.appendChild(svg);
+
+  // Chuyển SVG thành PNG để tải
+  const serializer = new XMLSerializer();
+  const svgStr = serializer.serializeToString(svg);
+  const img = new Image();
+  img.onload = function() {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width * 2;
+    canvas.height = img.height * 2;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const png = canvas.toDataURL("image/png");
+    downloadLink.href = png;
+    downloadLink.download = val + ".png";
+    downloadLink.style.display = "inline-block";
+  };
+  img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgStr)));
+}
+</script>
